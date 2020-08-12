@@ -1,8 +1,8 @@
+import datetime
 import os
-import platform
-import re
+import queue
 import socket
-import sys
+import time
 from time import sleep
 
 import pyautogui
@@ -45,7 +45,7 @@ def check_presence_of_element_with_css_selector(chrome_browser, selector, time=1
         chrome_browser.get('https://web.whatsapp.com/')
         return None
     else:
-        print('Successfully obtained user element ' + selector)
+        print('Successfully obtained element ' + selector)
         return element
 
 
@@ -69,9 +69,10 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
     qr_code = check_presence_of_element_with_css_selector(chrome_browser, '.NVQmc')
 
     retries = 0
-    while qr_code is not None or retries <= 3:
+    while qr_code is not None and retries <= 60:
         retries = retries + 1
         qr_code = check_presence_of_element_with_css_selector(chrome_browser, '.NVQmc')
+        time.sleep(1)
 
     if qr_code is None:
         with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
@@ -90,6 +91,13 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                     print(f'User by the name {user_row[0]} with phone number {user_row[1]}.')
                     line_count += 1
                     print('User loop entered')
+
+                    search_box = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                             '._3xpD_ > ._2FVVk.cBxw- > ._3FRCZ')
+                    if search_box is not None:
+                        search_box.click()
+                        search_box.send_keys(user_row[0])
+
                     user_element = check_presence_of_element_with_css_selector(chrome_browser,
                                                                                'span[title="{}"]'.format(user_row[0]))
                     print('User presence checked')
@@ -113,7 +121,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                     else:
                         # No user by the specified name in chat history
                         # So trying to create new chat
-                        print(user_row[0] + ' not present in chat history.')
+                        print(user_row[0] + ' not present in contacts .')
                         print('Loading the chat window using phone number.')
                         load_chat_with_phone_number(chrome_browser, user_row[1])
                         user_element = check_presence_of_element_with_css_selector(chrome_browser,
@@ -210,6 +218,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                         print('Writing failed users to csv.')
                         csv_writer.writerow([user_row[0], user_row[1]])
     else:
+        chrome_browser.close()
         return 8
     print(f'Processed {line_count - 1} lines. \n')
     chrome_browser.close()
@@ -257,6 +266,7 @@ def validate_csv(input_file_path):
 
 
 def main(input_file_path, image_file_path, failed_file_path, message_template):
+    print(datetime.datetime.now())
     if not is_connected():
         return 5, []
 
@@ -294,4 +304,5 @@ def main(input_file_path, image_file_path, failed_file_path, message_template):
         failed_file_path = get_absolute_path("../failed.csv")
 
     status_code = send_message(input_file_path, image_file_path, failed_file_path, message_template)
+    print(datetime.datetime.now())
     return status_code, []
