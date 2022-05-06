@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     # Register the drive
     chrome_browser = webdriver.Chrome(executable_path='/usr/lib/chromium-browser/chromedriver',
-                                      options=options)  # Change the path as per your local dir.
+                                      options=options)
     chrome_browser.get('https://web.whatsapp.com/')
 
     with open('contacts.csv') as csv_file:
