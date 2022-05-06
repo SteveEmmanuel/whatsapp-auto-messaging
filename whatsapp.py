@@ -119,6 +119,10 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                     print(user_row[0] + ' not present in chat history.')
                     print('Loading the chat window using phone number.')
                     load_chat_with_phone_number(chrome_browser, user_row[1])
+                    user_element = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                               'span[title="{}"]'.format(
+                                                                                   user_row[0]))
+
                 if user_element is not None:
                     print('Chat window for ' + user_row[0] + ' opened successfully.')
 
