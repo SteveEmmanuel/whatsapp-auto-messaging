@@ -1,5 +1,6 @@
 import os
 import platform
+import re
 import socket
 import sys
 from time import sleep
@@ -211,11 +212,48 @@ def get_absolute_path(file_name):
     return os.path.join(cwd, file_name)
 
 
+def validate_csv(input_file_path):
+    valid = True
+    error_line_count_list = []
+    with open(input_file_path) as input_csv_file:
+        csv_reader = csv.reader(input_csv_file, delimiter=',')
+        line_count = 0
+        for user_row in csv_reader:
+            if line_count == 0:
+                pass
+            else:
+                if len(user_row[1]) == 10:
+                    if not user_row[1].isdigit():
+                        valid = False
+                elif len(user_row[1]) == 12:
+                    if not user_row[1].isdigit():
+                        valid = False
+                    if not user_row[1].startswith("91"):
+                        valid = False
+                elif len(user_row[1]) == 13:
+                    if not user_row[1].isdigit():
+                        valid = False
+                    if not user_row[1].startswith("+91"):
+                        valid = False
+                else:
+                    valid = False
+            line_count += 1
+            if valid is False:
+                error_line_count_list.append(line_count)
+    return error_line_count_list
+
+
 def main(input_file_path, image_file_path, failed_file_path, message_template):
     if not is_connected():
-        return 5
+        return 5, []
+
+    error_line_count_list = validate_csv(input_file_path)
+    if len(error_line_count_list) > 0:
+        return 6, error_line_count_list
+
     try:
         chrome_browser = register_driver()
+
     except SessionNotCreatedException as snce:
         print(
             'Please download the appropriate version of the chrome driver from '
@@ -224,19 +262,19 @@ def main(input_file_path, image_file_path, failed_file_path, message_template):
         return 1
     except Exception as e:
         print(str(e))
-        return 2
+        return 2, []
     else:
         chrome_browser.close()
 
     if not path.exists(input_file_path):
-        return 3
+        return 3, []
 
     if image_file_path is not None:
         if not path.exists(image_file_path):
-            return 4
+            return 4, []
 
     if failed_file_path is None:
         failed_file_path = get_absolute_path("failed.csv")
 
     send_message(input_file_path, image_file_path, failed_file_path, message_template)
-    return 0
+    return 0, []

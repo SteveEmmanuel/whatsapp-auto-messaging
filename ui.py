@@ -123,7 +123,7 @@ class App(QDialog):
         from whatsapp import main
 
         try:
-            status_code = main(input_file_path=self.input_file_path, image_file_path=self.image_file_path,
+            status_code, error_line_count_list = main(input_file_path=self.input_file_path, image_file_path=self.image_file_path,
                                failed_file_path=None,
                                message_template=message_template)
         except Exception as e:
@@ -144,6 +144,11 @@ class App(QDialog):
                 self.showdialog(message='Image File does not exist!', dialog_type='error')
             elif status_code == 5:
                 self.showdialog(message='Check your internet connection!', dialog_type='error')
+            elif status_code == 6:
+                error_line_count_list = ', '.join(str(x) for x in error_line_count_list)
+                message = "Please make sure that phone numbers entered are valid or are in use.\nThe phone numbers " \
+                          "found at line(s) " + error_line_count_list + ' are not in valid format'
+                self.showdialog(message=message, dialog_type='error')
             else:
                 self.showdialog(message='Error!', dialog_type='error')
 
