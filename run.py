@@ -51,7 +51,7 @@ def register_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--user-data-dir=User Data')
     options.add_argument('--profile-directory=Default')
-    chrome_driver_linux = '/usr/lib/chromium-browser/chromedriver'
+    chrome_driver_linux = get_absolute_path('chromedriver')
     cwd = os.path.dirname(os.path.abspath(__file__))
     chrome_driver_windows = get_absolute_path('chromedriver.exe')
     mac_path_for_chrome = ''
