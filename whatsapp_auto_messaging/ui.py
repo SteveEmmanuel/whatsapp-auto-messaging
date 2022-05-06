@@ -153,6 +153,8 @@ class App(QDialog):
                 self.showdialog(message=message, dialog_type='error')
             elif status_code == 7:
                 self.showdialog(message="File dos not contain any contacts.", dialog_type='error')
+            elif status_code == 8:
+                self.showdialog(message="Unable to access Whatsapp as QR code was not scanned.", dialog_type='error')
             else:
                 self.showdialog(message='Error!', dialog_type='error')
 

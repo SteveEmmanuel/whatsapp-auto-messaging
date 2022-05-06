@@ -30,10 +30,10 @@ def is_connected():
         return False
 
 
-def check_presence_of_element_with_css_selector(chrome_browser, selector):
+def check_presence_of_element_with_css_selector(chrome_browser, selector, time=15):
     print('check_presence_of_element_with_css_selector function entered')
     try:
-        element = WebDriverWait(chrome_browser, 15).until(
+        element = WebDriverWait(chrome_browser, time).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
     except NoSuchElementException as se:
         # print("No element found with selector " + selector)
@@ -65,143 +65,155 @@ def register_driver():
 def send_message(input_file_path, image_file_path, failed_file_path, message_template):
     chrome_browser = register_driver()
     chrome_browser.get('https://web.whatsapp.com/')
-    with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
-        csv_reader = csv.reader(input_csv_file, delimiter=',')
 
-        csv_writer = csv.writer(failed_csv_file, delimiter=',')
-        csv_writer.writerow(['Name', 'Phone Number'])
+    qr_code = check_presence_of_element_with_css_selector(chrome_browser, '.NVQmc')
 
-        line_count = 0
-        for user_row in csv_reader:
-            success = True
-            if line_count == 0:
-                print(f'Column names are {", ".join(user_row)}')
-                line_count += 1
-            else:
-                print(f'User by the name {user_row[0]} with phone number {user_row[1]}.')
-                line_count += 1
-                print('User loop entered')
-                user_element = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                           'span[title="{}"]'.format(user_row[0]))
-                print('User presence checked')
-                if user_element is not None:
-                    print(user_row[0] + ' present, trying to click')
-                    try:
-                        user_element.click()
-                        success = True
-                    except StaleElementReferenceException as se:
-                        print('Stale element found, will find the user element again.')
-                        user_element = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                   'span[title="{}"]'.format(
-                                                                                       user_row[0]))
+    retries = 0
+    while qr_code is not None or retries <= 3:
+        retries = retries + 1
+        qr_code = check_presence_of_element_with_css_selector(chrome_browser, '.NVQmc')
+
+    if qr_code is None:
+        with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
+            csv_reader = csv.reader(input_csv_file, delimiter=',')
+
+            csv_writer = csv.writer(failed_csv_file, delimiter=',')
+            csv_writer.writerow(['Name', 'Phone Number'])
+
+            line_count = 0
+            for user_row in csv_reader:
+                success = True
+                if line_count == 0:
+                    print(f'Column names are {", ".join(user_row)}')
+                    line_count += 1
+                else:
+                    print(f'User by the name {user_row[0]} with phone number {user_row[1]}.')
+                    line_count += 1
+                    print('User loop entered')
+                    user_element = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                               'span[title="{}"]'.format(user_row[0]))
+                    print('User presence checked')
+                    if user_element is not None:
+                        print(user_row[0] + ' present, trying to click')
                         try:
                             user_element.click()
                             success = True
                         except StaleElementReferenceException as se:
-                            success = False
+                            print('Stale element found, will find the user element again.')
+                            user_element = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                       'span[title="{}"]'.format(
+                                                                                           user_row[0]))
+                            try:
+                                user_element.click()
+                                success = True
+                            except StaleElementReferenceException as se:
+                                success = False
+                        else:
+                            print('Successfully clicked user element.')
                     else:
-                        print('Successfully clicked user element.')
-                else:
-                    # No user by the specified name in chat history
-                    # So trying to create new chat
-                    print(user_row[0] + ' not present in chat history.')
-                    print('Loading the chat window using phone number.')
-                    load_chat_with_phone_number(chrome_browser, user_row[1])
-                    user_element = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                               'span[title="{}"]'.format(
-                                                                                   user_row[0]))
+                        # No user by the specified name in chat history
+                        # So trying to create new chat
+                        print(user_row[0] + ' not present in chat history.')
+                        print('Loading the chat window using phone number.')
+                        load_chat_with_phone_number(chrome_browser, user_row[1])
+                        user_element = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                   'span[title="{}"]'.format(
+                                                                                       user_row[0]))
 
-                if user_element is not None:
-                    print('Chat window for ' + user_row[0] + ' opened successfully.')
+                    if user_element is not None:
+                        print('Chat window for ' + user_row[0] + ' opened successfully.')
 
-                    if image_file_path is not None and success is True:
-                        attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                          "#main > header > div._3nq_A > div > div:nth-child(2) > div")
+                        if image_file_path is not None and success is True:
+                            attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                              "#main > header > div._3nq_A > div > div:nth-child(2) > div")
 
-                        if attach_files_button is not None:
-                            try:
-                                attach_files_button.click()
-                                success = True
-                            except Exception as e:
-                                print('Failed to click attach file button.')
-                                success = False
+                            if attach_files_button is not None:
+                                try:
+                                    attach_files_button.click()
+                                    success = True
+                                except Exception as e:
+                                    print('Failed to click attach file button.')
+                                    success = False
+                                else:
+                                    print('Successfully clicked attach file button.')
                             else:
-                                print('Successfully clicked attach file button.')
-                        else:
-                            print('Attach file Button not found.')
-                            success = False
-
-                        media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                       "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
-
-                        if media_attachment is not None:
-                            try:
-                                sleep(1)
-                                media_attachment.click()
-                                success = True
-                            except Exception as e:
-                                print('Failed to click attach media file button.')
+                                print('Attach file Button not found.')
                                 success = False
+
+                            media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                           "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
+
+                            if media_attachment is not None:
+                                try:
+                                    sleep(1)
+                                    media_attachment.click()
+                                    success = True
+                                except Exception as e:
+                                    print('Failed to click attach media file button.')
+                                    success = False
+                                else:
+                                    print('Successfully clicked attach media file button.')
                             else:
-                                print('Successfully clicked attach media file button.')
-                        else:
-                            print('Attach media file Button not found.')
-                            success = False
+                                print('Attach media file Button not found.')
+                                success = False
 
-                        sleep(1)
-                        pyautogui.write(image_file_path)
-                        pyautogui.press('enter')
-                        sleep(2)
+                            sleep(1)
+                            pyautogui.write(image_file_path)
+                            pyautogui.press('enter')
+                            sleep(2)
 
-                        image = check_presence_of_element_with_css_selector(chrome_browser, '._2YWgP')
+                            image = check_presence_of_element_with_css_selector(chrome_browser, '._2YWgP')
 
-                        if image is None:
-                            break
-                        send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                             '._3y5oW._3qMYG')
+                            if image is None:
+                                break
+                            send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                                 '._3y5oW._3qMYG')
 
-                        if send_attachment_button is not None:
-                            try:
-                                send_attachment_button.click()
-                                success = True
-                            except Exception as e:
-                                print('Failed to find send attachment button.')
+                            if send_attachment_button is not None:
+                                try:
+                                    send_attachment_button.click()
+                                    success = True
+                                except Exception as e:
+                                    print('Failed to find send attachment button.')
+                                    success = False
+                            else:
+                                print('Send attachment Button not found.')
+                                success = False
+
+                        message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+                        message = message_template
+                        if message_box is not None and success is True:
+                            if "{}" in message_template:
+                                message = message_template.format(user_row[0])
+                            message_box.send_keys(message)
+
+                            send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
+                            # Click on send button
+                            if send_button is not None:
+                                try:
+                                    send_button.click()
+                                except Exception as e:
+                                    print('Failed to send message.')
+                                    success = False
+                            else:
+                                print('Send Button not found.')
                                 success = False
                         else:
-                            print('Send attachment Button not found.')
+                            print('Message Box not found.')
                             success = False
-
-                    message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
-                    message = message_template
-                    if message_box is not None and success is True:
-                        if "{}" in message_template:
-                            message = message_template.format(user_row[0])
-                        message_box.send_keys(message)
-
-                        send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
-                        # Click on send button
-                        if send_button is not None:
-                            try:
-                                send_button.click()
-                            except Exception as e:
-                                print('Failed to send message.')
-                                success = False
-                        else:
-                            print('Send Button not found.')
-                            success = False
+                        print('User loop exited\n\n')
                     else:
-                        print('Message Box not found.')
                         success = False
-                    print('User loop exited\n\n')
-                else:
-                    success = False
-                    print(user_row[0] + ' not present in chat history.')
+                        print(user_row[0] + ' not present in chat history.')
 
-                if success is False:
-                    print('Writing failed users to csv.')
-                    csv_writer.writerow([user_row[0], user_row[1]])
+                    if success is False:
+                        print('Writing failed users to csv.')
+                        csv_writer.writerow([user_row[0], user_row[1]])
+    else:
+        return 8
     print(f'Processed {line_count - 1} lines. \n')
     chrome_browser.close()
+    return 0
 
 
 def get_absolute_path(file_name):
@@ -281,5 +293,5 @@ def main(input_file_path, image_file_path, failed_file_path, message_template):
     if failed_file_path is None:
         failed_file_path = get_absolute_path("../failed.csv")
 
-    send_message(input_file_path, image_file_path, failed_file_path, message_template)
-    return 0, []
+    status_code = send_message(input_file_path, image_file_path, failed_file_path, message_template)
+    return status_code, []
