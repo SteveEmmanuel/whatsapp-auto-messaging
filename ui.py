@@ -1,7 +1,7 @@
 import sys
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QPushButton, QGroupBox, QDialog, QVBoxLayout, \
-    QGridLayout, QFileDialog, QLabel, QPlainTextEdit
+    QGridLayout, QFileDialog, QLabel, QPlainTextEdit, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 
 primary_font = QtGui.QFont("Roboto", 12, QtGui.QFont.Medium)
@@ -33,8 +33,8 @@ class App(QDialog):
         self.top = 10
         self.width = 320
         self.height = 100
-        self.input_file_path = ''
-        self.image_file_path = ''
+        self.input_file_path = None
+        self.image_file_path = None
         self.initUI()
 
     def initUI(self):
@@ -105,16 +105,56 @@ class App(QDialog):
         self.select_input_file.clicked.connect(self.open_file_name_dialog)
         self.select_image.clicked.connect(self.open_file_name_dialog)
 
+        self.send_button.clicked.connect(self.send_message)
+
         self.horizontal_group_box.setLayout(layout)
+
+    @pyqtSlot()
+    def send_message(self):
+        if self.input_file_path is None:
+            self.showdialog(message='Input csv File not selected!', type='error')
+            return
+
+        message_template = self.message_box.toPlainText()
+        if len(message_template) == 0:
+            self.showdialog(message='Message cannot be empty', type='error')
+            return
+
+        from whatsapp import main
+
+        try:
+            status_code = main(input_file_path=self.input_file_path, image_file_path=self.image_file_path,
+                               failed_file_path=None,
+                               message_template=message_template)
+        except Exception as e:
+            self.showdialog(message="Error! " + str(e), type='error')
+        else:
+            if status_code == 0:
+                self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', type='alert')
+            elif status_code == 1:
+                message = 'Please download the appropriate version of the chrome driver from ' \
+                          'https://chromedriver.chromium.org/downloads .\nAfter downloading, place the file in the ' \
+                          'appropriate sub folder in the folder [chromedrivers]. '
+                self.showdialog(message=message, type='error')
+            elif status_code == 2:
+                self.showdialog(message='Error.', type='error')
+            elif status_code == 3:
+                self.showdialog(message='Input csv File does not exist!', type='error')
+            elif status_code == 4:
+                self.showdialog(message='Image File does not exist!', type='error')
+            else:
+                self.showdialog(message='Error!', type='error')
 
     @pyqtSlot()
     def open_file_name_dialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileNames()", "",
-                                              "All Files (*);;Python Files (*.py)", options=options)
+        if self.sender() is self.select_input_file:
+            filter = "csv(*.csv)"
+        elif self.sender() is self.select_image:
+            filter = "Image Files (*.png *.jpg)"
+        file, _ = QFileDialog.getOpenFileName(self, filter=filter, options=options)
         if file:
-            print(file)
             if self.sender() is self.select_input_file:
                 print('Selected input file: ' + file)
                 self.selected_input_file_label.setText(file)
@@ -123,6 +163,19 @@ class App(QDialog):
                 print('Selected image file: ' + file)
                 self.selected_image_label.setText(file)
                 self.image_file_path = file
+
+    @pyqtSlot()
+    def showdialog(self, message, type='alert'):
+        dialog = QMessageBox()
+        if type == 'alert':
+            dialog.setIcon(QMessageBox.Information)
+        if type == 'error':
+            dialog.setIcon(QMessageBox.Warning)
+        dialog.setText(message)
+        dialog.setWindowTitle(type)
+        dialog.setStandardButtons(QMessageBox.Ok)
+
+        dialog.exec_()
 
 
 if __name__ == '__main__':

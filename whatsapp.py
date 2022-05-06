@@ -73,7 +73,7 @@ def register_driver():
     return chrome_browser
 
 
-def send_message(input_file_path, failed_file_path, message_template, media_file_path):
+def send_message(input_file_path, image_file_path, failed_file_path, message_template):
     chrome_browser = register_driver()
     chrome_browser.get('https://web.whatsapp.com/')
     with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
@@ -108,7 +108,6 @@ def send_message(input_file_path, failed_file_path, message_template, media_file
                             user_element.click()
                         except StaleElementReferenceException as se:
                             success = False
-                            break
                     else:
                         print('Successfully clicked user element.')
                 else:
@@ -117,87 +116,92 @@ def send_message(input_file_path, failed_file_path, message_template, media_file
                     print(user_row[0] + ' not present in chat history.')
                     print('Loading the chat window using phone number.')
                     load_chat_with_phone_number(chrome_browser, user_row[1])
+                if user_element is not None:
+                    print('Chat window for ' + user_row[0] + ' opened successfully.')
 
-                print('Chat window for ' + user_row[0] + ' opened successfully.')
+                    if image_file_path is not None and success is True:
+                        attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                          "#main > header > div._3nq_A > div > div:nth-child(2) > div")
 
-                if len(media_file_path) > 0:
-                    attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                      "#main > header > div._3nq_A > div > div:nth-child(2) > div")
-
-                    if attach_files_button is not None:
-                        try:
-                            attach_files_button.click()
-                        except Exception as e:
-                            print('Failed to click attach file button.')
-                            success = False
-                            break
+                        if attach_files_button is not None:
+                            try:
+                                attach_files_button.click()
+                            except Exception as e:
+                                print('Failed to click attach file button.')
+                                success = False
+                            else:
+                                print('Successfully clicked attach file button.')
                         else:
-                            print('Successfully clicked attach file button.')
-                    else:
-                        print('Attach file Button not found.')
-                        success = False
-                        break
-
-                    media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                   "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
-
-                    if media_attachment is not None:
-                        try:
-                            sleep(1)
-                            media_attachment.click()
-                        except Exception as e:
-                            print('Failed to click attach media file button.')
+                            print('Attach file Button not found.')
                             success = False
-                            break
+
+                        media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                       "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
+
+                        if media_attachment is not None:
+                            try:
+                                sleep(1)
+                                media_attachment.click()
+                            except Exception as e:
+                                print('Failed to click attach media file button.')
+                                success = False
+                            else:
+                                print('Successfully clicked attach media file button.')
                         else:
-                            print('Successfully clicked attach media file button.')
-                    else:
-                        print('Attach media file Button not found.')
-                        success = False
-                        break
-
-                    sleep(1)
-                    pyautogui.write(media_file_path)
-                    pyautogui.press('enter')
-                    sleep(2)
-
-                    send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                         '._3y5oW._3qMYG')
-
-                    if send_attachment_button is not None:
-                        try:
-                            send_attachment_button.click()
-                        except Exception as e:
-                            print('Failed to find send attachment button.')
+                            print('Attach media file Button not found.')
                             success = False
-                    else:
-                        print('Send attachment Button not found.')
-                        success = False
 
-                message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+                        sleep(1)
+                        pyautogui.write(image_file_path)
+                        pyautogui.press('enter')
+                        sleep(2)
 
-                if message_box is not None:
-                    if "{}" in message_template:
-                        message = message_template.format(user_row[0])
-                    message_box.send_keys(message)
+                        image = check_presence_of_element_with_css_selector(chrome_browser, '._2YWgP')
 
-                    send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
-                    # Click on send button
-                    if send_button is not None:
-                        try:
-                            send_button.click()
-                        except Exception as e:
-                            print('Failed to send message.')
+                        if image is None:
+                            break
+                        send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                             '._3y5oW._3qMYG')
+
+                        if send_attachment_button is not None:
+                            try:
+                                send_attachment_button.click()
+                            except Exception as e:
+                                print('Failed to find send attachment button.')
+                                success = False
+                        else:
+                            print('Send attachment Button not found.')
                             success = False
-                    else:
-                        print('Send Button not found.')
-                        success = False
+
+                        message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+
+                        if message_box is not None and success is True:
+                            if "{}" in message_template:
+                                message = message_template.format(user_row[0])
+                            message_box.send_keys(message)
+
+                            send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
+                            # Click on send button
+                            if send_button is not None:
+                                try:
+                                    send_button.click()
+                                except Exception as e:
+                                    print('Failed to send message.')
+                                    success = False
+                            else:
+                                print('Send Button not found.')
+                                success = False
+                        else:
+                            print('Message Box not found.')
+                            success = False
+                        print('User loop exited\n\n')
                 else:
-                    print('Message Box not found.')
                     success = False
-                print('User loop exited/n/n')
-            if success is False:
-                csv_writer.writerow([user_row[0], user_row[1]])
+                    print(user_row[0] + ' not present in chat history.')
+
+                if success is False:
+                    print('Writing failed users to csv.')
+                    csv_writer.writerow([user_row[0], user_row[1]])
     print(f'Processed {line_count - 1} lines. \n')
     chrome_browser.close()
 
@@ -207,7 +211,7 @@ def get_absolute_path(file_name):
     return os.path.join(cwd, file_name)
 
 
-if __name__ == '__main__':
+def main(input_file_path, image_file_path, failed_file_path, message_template):
     try:
         chrome_browser = register_driver()
     except SessionNotCreatedException as snce:
@@ -215,35 +219,22 @@ if __name__ == '__main__':
             'Please download the appropriate version of the chrome driver from '
             'https://chromedriver.chromium.org/downloads ')
         print('After downloading, place the file in the appropriate sub folder in the folder [chromedrivers].')
-        sys.exit()
+        return 1
     except Exception as e:
         print(str(e))
-        sys.exit()
+        return 2
     else:
         chrome_browser.close()
-    input_file_name = input("Enter the name of the file : ")
 
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    input_file_path = get_absolute_path(input_file_name)
-    if path.exists(input_file_path):
-        failed_file_name = input("Enter the name of the file to which failed user details are to be saved : ")
-        failed_file_path = get_absolute_path(failed_file_name)
+    if not path.exists(input_file_path):
+        return 3
 
-        message_template = input(
-            "Enter the message to be sent ( please enter {} where you need to edit in the customer name provided in "
-            "the CSV) : ")
-        if len(message_template) == 0:
-            print("Message cannot be empty")
+    if image_file_path is not None:
+        if not path.exists(image_file_path):
+            return 4
 
-        media_file_name = input(
-            "Enter the name of media attachment(eg. pic.jpg, pic.png etc or empty if not required): ")
-        media_file_path = ''
-        if len(media_file_name) > 0:
-            if path.exists(media_file_name):
-                media_file_path = get_absolute_path(media_file_name)
-            else:
-                print("Media file not found")
+    if failed_file_path is None:
+        failed_file_path = get_absolute_path("failed.csv")
 
-        send_message(input_file_path, failed_file_path, message_template, media_file_path)
-    else:
-        print("File not found")
+    send_message(input_file_path, image_file_path, failed_file_path, message_template)
+    return 0
