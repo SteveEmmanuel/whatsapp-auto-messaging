@@ -62,7 +62,7 @@ def register_driver():
         chrome_driver_path = chrome_driver_linux
     elif platform.system() == 'Mac':
         pass
-    # Register the drive
+    # Register the driver
     try:
         chrome_browser = webdriver.Chrome(executable_path=chrome_driver_path,
                                           options=options)
