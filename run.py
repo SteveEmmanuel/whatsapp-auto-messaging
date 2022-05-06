@@ -1,3 +1,4 @@
+import os
 import socket
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
@@ -5,10 +6,11 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 import csv
+from os import path
 
 
-def load_chat_with_phone_number(driver, phone_number):
-    driver.get("https://web.whatsapp.com/send?phone={}&source=&data=#".format(phone_number))
+def load_chat_with_phone_number(chrome_browser, phone_number):
+    chrome_browser.get("https://web.whatsapp.com/send?phone={}&source=&data=#".format(phone_number))
 
 
 def is_connected():
@@ -21,10 +23,10 @@ def is_connected():
         is_connected()
 
 
-def check_presence_of_element_with_css_selector(driver, selector):
+def check_presence_of_element_with_css_selector(chrome_browser, selector):
     print('check_presence_of_element_with_css_selector function entered')
     try:
-        element = WebDriverWait(driver, 15).until(
+        element = WebDriverWait(chrome_browser, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
     except NoSuchElementException as se:
         # print("No element found with selector " + selector)
@@ -40,8 +42,7 @@ def check_presence_of_element_with_css_selector(driver, selector):
         return element
 
 
-if __name__ == '__main__':
-
+def register_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--user-data-dir=User Data')
     options.add_argument('--profile-directory=Default')
@@ -49,9 +50,15 @@ if __name__ == '__main__':
     # Register the drive
     chrome_browser = webdriver.Chrome(executable_path='/usr/lib/chromium-browser/chromedriver',
                                       options=options)
-    chrome_browser.get('https://web.whatsapp.com/')
 
-    with open('contacts.csv') as input_csv_file, open('failed.csv', 'w', newline='') as failed_csv_file:
+    return chrome_browser
+
+
+def send_message(input_file_path, failed_file_path):
+    chrome_browser = register_driver()
+
+    chrome_browser.get('https://web.whatsapp.com/')
+    with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
         csv_reader = csv.reader(input_csv_file, delimiter=',')
 
         csv_writer = csv.writer(failed_csv_file, delimiter=',')
@@ -113,3 +120,16 @@ if __name__ == '__main__':
                 csv_writer.writerow([user_row[0], user_row[1]])
     print(f'Processed {line_count - 1} lines. \n')
     chrome_browser.close()
+
+
+if __name__ == '__main__':
+    input_file_name = input("Enter the name of the file : ")
+
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    input_file_path = cwd + "/" + input_file_name
+    if path.exists(input_file_path):
+        failed_file_name = input("Enter the name of the file to which failed user details are to be saved : ")
+        failed_file_path = cwd + "/" + failed_file_name
+        send_message(input_file_path, failed_file_path)
+    else:
+        print("File not found")
