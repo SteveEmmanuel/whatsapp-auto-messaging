@@ -220,23 +220,27 @@ def validate_csv(input_file_path):
         line_count = 0
         for user_row in csv_reader:
             if line_count == 0:
-                pass
-            else:
-                if len(user_row[1]) == 10:
-                    if not user_row[1].isdigit():
-                        valid = False
-                elif len(user_row[1]) == 12:
-                    if not user_row[1].isdigit():
-                        valid = False
-                    if not user_row[1].startswith("91"):
-                        valid = False
-                elif len(user_row[1]) == 13:
-                    if not user_row[1].isdigit():
-                        valid = False
-                    if not user_row[1].startswith("+91"):
-                        valid = False
-                else:
+                if len(user_row) < 2:
                     valid = False
+            else:
+                if len(user_row) < 2:
+                    valid = False
+                else:
+                    if len(user_row[1]) == 10:
+                        if not user_row[1].isdigit():
+                            valid = False
+                    elif len(user_row[1]) == 12:
+                        if not user_row[1].isdigit():
+                            valid = False
+                        if not user_row[1].startswith("91"):
+                            valid = False
+                    elif len(user_row[1]) == 13:
+                        if not user_row[1].isdigit():
+                            valid = False
+                        if not user_row[1].startswith("+91"):
+                            valid = False
+                    else:
+                        valid = False
             line_count += 1
             if valid is False:
                 error_line_count_list.append(line_count)
