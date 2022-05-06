@@ -50,24 +50,12 @@ def check_presence_of_element_with_css_selector(chrome_browser, selector):
 
 
 def register_driver():
-    options = webdriver.ChromeOptions()
-    options.add_argument('--user-data-dir=User Data')
-    options.add_argument('--profile-directory=Default')
-    chrome_driver_linux = get_absolute_path('../chromedrivers/linux/chromedriver')
-    chrome_driver_windows = get_absolute_path('../chromedrivers/windows/chromedriver.exe')
-    mac_path_for_chrome = get_absolute_path('../chromedrivers/mac/chromedriver')
-    chrome_driver_path = ''
+    import chromedriver_autoinstaller
 
-    if platform.system() == 'Windows':
-        chrome_driver_path = chrome_driver_windows
-    elif platform.system() == 'Linux':
-        chrome_driver_path = chrome_driver_linux
-    elif platform.system() == 'Mac':
-        chrome_driver_path = mac_path_for_chrome
+    chromedriver_autoinstaller.install()
     # Register the driver
     try:
-        chrome_browser = webdriver.Chrome(executable_path=chrome_driver_path,
-                                          options=options)
+        chrome_browser = webdriver.Chrome()
     except InvalidArgumentException as ia:
         print("Please Close the previous Whatsapp web window.")
 
