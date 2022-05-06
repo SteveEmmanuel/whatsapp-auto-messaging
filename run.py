@@ -219,7 +219,7 @@ if __name__ == '__main__':
         message_template = input(
             "Enter the message to be sent ( please enter {} where you need to edit in the customer name provided in "
             "the CSV) : ")
-        if len(message_template) is 0:
+        if len(message_template) == 0:
             print("Message cannot be empty")
 
         media_file_name = input(
