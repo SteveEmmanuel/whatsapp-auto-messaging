@@ -58,7 +58,7 @@ def register_driver():
     return chrome_browser
 
 
-def send_message(input_file_path, failed_file_path):
+def send_message(input_file_path, failed_file_path, message_template):
     chrome_browser = register_driver()
 
     chrome_browser.get('https://web.whatsapp.com/')
@@ -101,9 +101,13 @@ def send_message(input_file_path, failed_file_path):
                     print('Loading the chat window using phone number.')
                     load_chat_with_phone_number(chrome_browser, user_row[1])
 
+                print('Chat window for ' + user_row[0] + ' opened successfully.')
+
                 message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
                 if message_box is not None:
-                    message_box.send_keys('hey')
+                    if "{}" in message_template:
+                        message = message_template.format(user_row[0])
+                    message_box.send_keys(message)
 
                     send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
                     # Click on send button
@@ -119,7 +123,7 @@ def send_message(input_file_path, failed_file_path):
                 else:
                     print('Message Box not found.')
                     success = False
-                print('User loop exited')
+                print('User loop exited/n/n')
             if success is False:
                 csv_writer.writerow([user_row[0], user_row[1]])
     print(f'Processed {line_count - 1} lines. \n')
@@ -134,6 +138,11 @@ if __name__ == '__main__':
     if path.exists(input_file_path):
         failed_file_name = input("Enter the name of the file to which failed user details are to be saved : ")
         failed_file_path = cwd + "/" + failed_file_name
-        send_message(input_file_path, failed_file_path)
+
+        message_template = input(
+            "Enter the message to be sent ( please enter {} where you need to edit in the customer name provided in "
+            "the CSV) : ")
+
+        send_message(input_file_path, failed_file_path, message_template)
     else:
         print("File not found")
