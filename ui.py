@@ -112,12 +112,12 @@ class App(QDialog):
     @pyqtSlot()
     def send_message(self):
         if self.input_file_path is None:
-            self.showdialog(message='Input csv File not selected!', type='error')
+            self.showdialog(message='Input csv File not selected!', dialog_type='error')
             return
 
         message_template = self.message_box.toPlainText()
         if len(message_template) == 0:
-            self.showdialog(message='Message cannot be empty', type='error')
+            self.showdialog(message='Message cannot be empty', dialog_type='error')
             return
 
         from whatsapp import main
@@ -127,25 +127,25 @@ class App(QDialog):
                                failed_file_path=None,
                                message_template=message_template)
         except Exception as e:
-            self.showdialog(message="Error! " + str(e), type='error')
+            self.showdialog(message="Error! " + str(e), dialog_type='error')
         else:
             if status_code == 0:
-                self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', type='alert')
+                self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', dialog_type='alert')
             elif status_code == 1:
                 message = 'Please download the appropriate version of the chrome driver from ' \
                           'https://chromedriver.chromium.org/downloads .\nAfter downloading, place the file in the ' \
                           'appropriate sub folder in the folder [chromedrivers]. '
-                self.showdialog(message=message, type='error')
+                self.showdialog(message=message, dialog_type='error')
             elif status_code == 2:
-                self.showdialog(message='Error.', type='error')
+                self.showdialog(message='Error.', dialog_type='error')
             elif status_code == 3:
-                self.showdialog(message='Input csv File does not exist!', type='error')
+                self.showdialog(message='Input csv File does not exist!', dialog_type='error')
             elif status_code == 4:
-                self.showdialog(message='Image File does not exist!', type='error')
+                self.showdialog(message='Image File does not exist!', dialog_type='error')
             elif status_code == 5:
-                self.showdialog(message='Check your internet connection!', type='error')
+                self.showdialog(message='Check your internet connection!', dialog_type='error')
             else:
-                self.showdialog(message='Error!', type='error')
+                self.showdialog(message='Error!', dialog_type='error')
 
     @pyqtSlot()
     def open_file_name_dialog(self):
@@ -167,14 +167,14 @@ class App(QDialog):
                 self.image_file_path = file
 
     @pyqtSlot()
-    def showdialog(self, message, type='alert'):
+    def showdialog(self, message, dialog_type='alert'):
         dialog = QMessageBox()
-        if type == 'alert':
+        if dialog_type == 'alert':
             dialog.setIcon(QMessageBox.Information)
-        if type == 'error':
+        if dialog_type == 'error':
             dialog.setIcon(QMessageBox.Warning)
         dialog.setText(message)
-        dialog.setWindowTitle(type.title())
+        dialog.setWindowTitle(dialog_type.title())
         dialog.setStandardButtons(QMessageBox.Ok)
 
         dialog.exec_()
