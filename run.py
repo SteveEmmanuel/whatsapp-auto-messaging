@@ -43,7 +43,7 @@ def check_presence_of_element_with_css_selector(driver, selector):
 if __name__ == '__main__':
 
     options = webdriver.ChromeOptions()
-    options.add_argument('--user-data-dir=<User Data Path>')
+    options.add_argument('--user-data-dir=User Data')
     options.add_argument('--profile-directory=Default')
 
     # Register the drive
