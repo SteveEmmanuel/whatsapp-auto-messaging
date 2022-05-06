@@ -51,10 +51,15 @@ if __name__ == '__main__':
                                       options=options)
     chrome_browser.get('https://web.whatsapp.com/')
 
-    with open('contacts.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
+    with open('contacts.csv') as input_csv_file, open('failed.csv', 'w', newline='') as failed_csv_file:
+        csv_reader = csv.reader(input_csv_file, delimiter=',')
+
+        csv_writer = csv.writer(failed_csv_file, delimiter=',')
+        csv_writer.writerow(['Name', 'Phone Number'])
+
         line_count = 0
         for user_row in csv_reader:
+            success = True
             if line_count == 0:
                 print(f'Column names are {", ".join(user_row)}')
                 line_count += 1
@@ -66,7 +71,7 @@ if __name__ == '__main__':
                                                                            'span[title="{}"]'.format(user_row[0]))
                 print('User presence checked')
                 if user_element is not None:
-                    print('User present, trying to click')
+                    print(user_row[0] + ' present, trying to click')
                     try:
                         user_element.click()
                     except StaleElementReferenceException as se:
@@ -77,11 +82,12 @@ if __name__ == '__main__':
                         try:
                             user_element.click()
                         except StaleElementReferenceException as se:
-                            break
+                            success = False
                 else:
                     # No user by the specified name in chat history
                     # So trying to create new chat
-                    print('User not present')
+                    print(user_row[0] + ' not present in chat history.')
+                    print('Loading the chat window using phone number.')
                     load_chat_with_phone_number(chrome_browser, user_row[1])
 
                 message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
@@ -91,8 +97,19 @@ if __name__ == '__main__':
                     send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
                     # Click on send button
                     if send_button is not None:
-                        send_button.click()
+                        try:
+                            send_button.click()
+                        except Exception as e:
+                            print('Failed to send message.')
+                            success = False
+                    else:
+                        print('Send Button not found.')
+                        success = False
+                else:
+                    print('Message Box not found.')
+                    success = False
                 print('User loop exited')
-
-    print(f'Processed {line_count} lines. \n')
+            if success is False:
+                csv_writer.writerow([user_row[0], user_row[1]])
+    print(f'Processed {line_count - 1} lines. \n')
     chrome_browser.close()
