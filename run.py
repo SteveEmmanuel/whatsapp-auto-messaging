@@ -2,7 +2,8 @@ import os
 import socket
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, \
+    InvalidArgumentException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 import csv
@@ -48,8 +49,11 @@ def register_driver():
     options.add_argument('--profile-directory=Default')
 
     # Register the drive
-    chrome_browser = webdriver.Chrome(executable_path='/usr/lib/chromium-browser/chromedriver',
-                                      options=options)
+    try:
+        chrome_browser = webdriver.Chrome(executable_path='/usr/lib/chromium-browser/chromedriver',
+                                          options=options)
+    except InvalidArgumentException as ia:
+        print("Please Close the previous Whatsapp web window.")
 
     return chrome_browser
 
