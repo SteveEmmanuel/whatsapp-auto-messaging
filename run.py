@@ -62,7 +62,7 @@ def register_driver():
     return chrome_browser
 
 
-def send_message(input_file_path, failed_file_path, message_template):
+def send_message(input_file_path, failed_file_path, message_template, media_file_path):
     chrome_browser = register_driver()
 
     chrome_browser.get('https://web.whatsapp.com/')
@@ -110,58 +110,59 @@ def send_message(input_file_path, failed_file_path, message_template):
 
                 print('Chat window for ' + user_row[0] + ' opened successfully.')
 
-                attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                                  "#main > header > div._3nq_A > div > div:nth-child(2) > div")
+                if len(media_file_path) > 0:
+                    attach_files_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                      "#main > header > div._3nq_A > div > div:nth-child(2) > div")
 
-                if attach_files_button is not None:
-                    try:
-                        attach_files_button.click()
-                    except Exception as e:
-                        print('Failed to click attach file button.')
+                    if attach_files_button is not None:
+                        try:
+                            attach_files_button.click()
+                        except Exception as e:
+                            print('Failed to click attach file button.')
+                            success = False
+                            break
+                        else:
+                            print('Successfully clicked attach file button.')
+                    else:
+                        print('Attach file Button not found.')
                         success = False
                         break
+
+                    media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                   "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
+
+                    if media_attachment is not None:
+                        try:
+                            sleep(1)
+                            media_attachment.click()
+                        except Exception as e:
+                            print('Failed to click attach media file button.')
+                            success = False
+                            break
+                        else:
+                            print('Successfully clicked attach media file button.')
                     else:
-                        print('Successfully clicked attach file button.')
-                else:
-                    print('Attach file Button not found.')
-                    success = False
-                    break
-
-                media_attachment = check_presence_of_element_with_css_selector(chrome_browser,
-                                                                               "#main > header > div._3nq_A > div > div.PVMjB._4QpsN > span > div > div > ul > li:nth-child(1) > button")
-
-                if media_attachment is not None:
-                    try:
-                        sleep(1)
-                        media_attachment.click()
-                    except Exception as e:
-                        print('Failed to click attach media file button.')
+                        print('Attach media file Button not found.')
                         success = False
                         break
+
+                    sleep(1)
+                    cwd = os.path.dirname(os.path.abspath(__file__))
+                    pyautogui.write(cwd + "/a.jpg")
+                    pyautogui.press('enter')
+                    sleep(2)
+
+                    send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser, '._3y5oW._3qMYG')
+
+                    if send_attachment_button is not None:
+                        try:
+                            send_attachment_button.click()
+                        except Exception as e:
+                            print('Failed to find send attachment button.')
+                            success = False
                     else:
-                        print('Successfully clicked attach media file button.')
-                else:
-                    print('Attach media file Button not found.')
-                    success = False
-                    break
-
-                sleep(1)
-                cwd = os.path.dirname(os.path.abspath(__file__))
-                pyautogui.write(cwd + "/a.jpg")
-                pyautogui.press('enter')
-                sleep(2)
-
-                send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser, '._3y5oW._3qMYG')
-
-                if send_attachment_button is not None:
-                    try:
-                        send_attachment_button.click()
-                    except Exception as e:
-                        print('Failed to find send attachment button.')
+                        print('Send attachment Button not found.')
                         success = False
-                else:
-                    print('Send attachment Button not found.')
-                    success = False
 
                 message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
 
@@ -203,7 +204,18 @@ if __name__ == '__main__':
         message_template = input(
             "Enter the message to be sent ( please enter {} where you need to edit in the customer name provided in "
             "the CSV) : ")
+        if len(message_template) is 0:
+            print("Message cannot be empty")
 
-        send_message(input_file_path, failed_file_path, message_template)
+        media_file_name = input(
+            "Enter the name of media attachment(eg. pic.jpg, pic.png etc or empty if not required): ")
+        media_file_path = ''
+        if len(media_file_name) > 0:
+            if path.exists(media_file_name):
+                media_file_path = cwd + "/" + media_file_name
+            else:
+                print("Media file not found")
+
+        send_message(input_file_path, failed_file_path, message_template, media_file_path)
     else:
         print("File not found")
