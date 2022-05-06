@@ -240,14 +240,18 @@ def validate_csv(input_file_path):
             line_count += 1
             if valid is False:
                 error_line_count_list.append(line_count)
-    return error_line_count_list
+    return line_count, error_line_count_list
 
 
 def main(input_file_path, image_file_path, failed_file_path, message_template):
     if not is_connected():
         return 5, []
 
-    error_line_count_list = validate_csv(input_file_path)
+    line_count, error_line_count_list = validate_csv(input_file_path)
+
+    if line_count <= 1:
+        return 7, []
+
     if len(error_line_count_list) > 0:
         return 6, error_line_count_list
 

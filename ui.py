@@ -149,6 +149,8 @@ class App(QDialog):
                 message = "Please make sure that phone numbers entered are valid or are in use.\nThe phone numbers " \
                           "found at line(s) " + error_line_count_list + ' are not in valid format'
                 self.showdialog(message=message, dialog_type='error')
+            elif status_code == 7:
+                self.showdialog(message="File dos not contain any contacts.", dialog_type='error')
             else:
                 self.showdialog(message='Error!', dialog_type='error')
 
