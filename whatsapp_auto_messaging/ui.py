@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui
 from PyQt5.QtWidgets import QApplication, QPushButton, QGroupBox, QDialog, QVBoxLayout, \
     QGridLayout, QFileDialog, QLabel, QPlainTextEdit, QMessageBox
 from PyQt5.QtCore import pyqtSlot
@@ -120,7 +120,7 @@ class App(QDialog):
             self.showdialog(message='Message cannot be empty', dialog_type='error')
             return
 
-        from whatsapp import main
+        from whatsapp_auto_messaging.whatsapp import main
 
         try:
             status_code, error_line_count_list = main(input_file_path=self.input_file_path,
@@ -189,7 +189,7 @@ class App(QDialog):
         dialog.exec_()
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())

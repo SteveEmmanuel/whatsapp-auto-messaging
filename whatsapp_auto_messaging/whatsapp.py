@@ -53,9 +53,9 @@ def register_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--user-data-dir=User Data')
     options.add_argument('--profile-directory=Default')
-    chrome_driver_linux = get_absolute_path('chromedrivers/linux/chromedriver')
-    chrome_driver_windows = get_absolute_path('chromedrivers/windows/chromedriver.exe')
-    mac_path_for_chrome = get_absolute_path('chromedrivers/mac/chromedriver')
+    chrome_driver_linux = get_absolute_path('../chromedrivers/linux/chromedriver')
+    chrome_driver_windows = get_absolute_path('../chromedrivers/windows/chromedriver.exe')
+    mac_path_for_chrome = get_absolute_path('../chromedrivers/mac/chromedriver')
     chrome_driver_path = ''
 
     if platform.system() == 'Windows':
@@ -291,7 +291,7 @@ def main(input_file_path, image_file_path, failed_file_path, message_template):
             return 4, []
 
     if failed_file_path is None:
-        failed_file_path = get_absolute_path("failed.csv")
+        failed_file_path = get_absolute_path("../failed.csv")
 
     send_message(input_file_path, image_file_path, failed_file_path, message_template)
     return 0, []
