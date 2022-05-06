@@ -122,10 +122,10 @@ class App(QDialog):
 
         from whatsapp import main
 
-
-        status_code, error_line_count_list = main(input_file_path=self.input_file_path, image_file_path=self.image_file_path,
-                           failed_file_path=None,
-                           message_template=message_template)
+        status_code, error_line_count_list = main(input_file_path=self.input_file_path,
+                                                  image_file_path=self.image_file_path,
+                                                  failed_file_path=None,
+                                                  message_template=message_template)
 
         if status_code == 0:
             self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', dialog_type='alert')
