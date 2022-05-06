@@ -122,35 +122,37 @@ class App(QDialog):
 
         from whatsapp import main
 
-        status_code, error_line_count_list = main(input_file_path=self.input_file_path,
-                                                  image_file_path=self.image_file_path,
-                                                  failed_file_path=None,
-                                                  message_template=message_template)
-
-        if status_code == 0:
-            self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', dialog_type='alert')
-        elif status_code == 1:
-            message = 'Please download the appropriate version of the chrome driver from ' \
-                      'https://chromedriver.chromium.org/downloads .\nAfter downloading, place the file in the ' \
-                      'appropriate sub folder in the folder [chromedrivers]. '
-            self.showdialog(message=message, dialog_type='error')
-        elif status_code == 2:
-            self.showdialog(message='Error.', dialog_type='error')
-        elif status_code == 3:
-            self.showdialog(message='Input csv File does not exist!', dialog_type='error')
-        elif status_code == 4:
-            self.showdialog(message='Image File does not exist!', dialog_type='error')
-        elif status_code == 5:
-            self.showdialog(message='Check your internet connection!', dialog_type='error')
-        elif status_code == 6:
-            error_line_count_list = ', '.join(str(x) for x in error_line_count_list)
-            message = "Please make sure that phone numbers entered are valid or are in use.\nThe phone numbers " \
-                      "found at line(s) " + error_line_count_list + ' are not in valid format'
-            self.showdialog(message=message, dialog_type='error')
-        elif status_code == 7:
-            self.showdialog(message="File dos not contain any contacts.", dialog_type='error')
+        try:
+            status_code, error_line_count_list = main(input_file_path=self.input_file_path, image_file_path=self.image_file_path,
+                               failed_file_path=None,
+                               message_template=message_template)
+        except Exception as e:
+            self.showdialog(message="Error! " + str(e), dialog_type='error')
         else:
-            self.showdialog(message='Error!', dialog_type='error')
+            if status_code == 0:
+                self.showdialog(message='Succesfully Completed\nCheck failed.csv for failed messages.', dialog_type='alert')
+            elif status_code == 1:
+                message = 'Please download the appropriate version of the chrome driver from ' \
+                          'https://chromedriver.chromium.org/downloads .\nAfter downloading, place the file in the ' \
+                          'appropriate sub folder in the folder [chromedrivers]. '
+                self.showdialog(message=message, dialog_type='error')
+            elif status_code == 2:
+                self.showdialog(message='Error.', dialog_type='error')
+            elif status_code == 3:
+                self.showdialog(message='Input csv File does not exist!', dialog_type='error')
+            elif status_code == 4:
+                self.showdialog(message='Image File does not exist!', dialog_type='error')
+            elif status_code == 5:
+                self.showdialog(message='Check your internet connection!', dialog_type='error')
+            elif status_code == 6:
+                error_line_count_list = ', '.join(str(x) for x in error_line_count_list)
+                message = "Please make sure that phone numbers entered are valid or are in use.\nThe phone numbers " \
+                          "found at line(s) " + error_line_count_list + ' are not in valid format'
+                self.showdialog(message=message, dialog_type='error')
+            elif status_code == 7:
+                self.showdialog(message="File dos not contain any contacts.", dialog_type='error')
+            else:
+                self.showdialog(message='Error!', dialog_type='error')
 
     @pyqtSlot()
     def open_file_name_dialog(self):
