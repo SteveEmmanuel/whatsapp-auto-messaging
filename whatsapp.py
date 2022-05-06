@@ -26,7 +26,7 @@ def is_connected():
         socket.create_connection(("www.google.com", 80))
         return True
     except:
-        is_connected()
+        return False
 
 
 def check_presence_of_element_with_css_selector(chrome_browser, selector):
@@ -212,6 +212,8 @@ def get_absolute_path(file_name):
 
 
 def main(input_file_path, image_file_path, failed_file_path, message_template):
+    if not is_connected():
+        return 5
     try:
         chrome_browser = register_driver()
     except SessionNotCreatedException as snce:

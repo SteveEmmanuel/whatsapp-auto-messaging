@@ -142,6 +142,8 @@ class App(QDialog):
                 self.showdialog(message='Input csv File does not exist!', type='error')
             elif status_code == 4:
                 self.showdialog(message='Image File does not exist!', type='error')
+            elif status_code == 5:
+                self.showdialog(message='Check your internet connection!', type='error')
             else:
                 self.showdialog(message='Error!', type='error')
 
