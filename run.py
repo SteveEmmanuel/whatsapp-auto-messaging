@@ -53,7 +53,7 @@ def register_driver():
     options.add_argument('--profile-directory=Default')
     chrome_driver_linux = get_absolute_path('chromedrivers/linux/chromedriver')
     chrome_driver_windows = get_absolute_path('chromedrivers/windows/chromedriver.exe')
-    mac_path_for_chrome = ''
+    mac_path_for_chrome = get_absolute_path('chromedrivers/mac/chromedriver')
     chrome_driver_path = ''
 
     if platform.system() == 'Windows':
