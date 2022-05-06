@@ -1,4 +1,5 @@
 import os
+import platform
 import socket
 from time import sleep
 
@@ -51,10 +52,21 @@ def register_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--user-data-dir=User Data')
     options.add_argument('--profile-directory=Default')
+    chrome_driver_linux = '/usr/lib/chromium-browser/chromedriver'
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    chrome_driver_windows = get_absolute_path('chromedriver.exe')
+    mac_path_for_chrome = ''
+    chrome_driver_path = ''
 
+    if platform.system() == 'Windows':
+        chrome_driver_path = chrome_driver_windows
+    elif platform.system() == 'Linux':
+        chrome_driver_path = chrome_driver_linux
+    elif platform.system() == 'Mac':
+        pass
     # Register the drive
     try:
-        chrome_browser = webdriver.Chrome(executable_path='/usr/lib/chromium-browser/chromedriver',
+        chrome_browser = webdriver.Chrome(executable_path=chrome_driver_path,
                                           options=options)
     except InvalidArgumentException as ia:
         print("Please Close the previous Whatsapp web window.")
@@ -147,15 +159,10 @@ def send_message(input_file_path, failed_file_path, message_template, media_file
                         break
 
                     sleep(1)
-                    cwd = os.path.dirname(os.path.abspath(__file__))
-                    pyautogui.write(cwd + "/a.jpg")
+                    pyautogui.write(media_file_path)
                     pyautogui.press('enter')
                     sleep(2)
 
-                    image = check_presence_of_element_with_css_selector(chrome_browser, '._2YWgP')
-
-                    if image is None:
-                        break
                     send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
                                                                                          '._3y5oW._3qMYG')
 
@@ -197,14 +204,19 @@ def send_message(input_file_path, failed_file_path, message_template, media_file
     chrome_browser.close()
 
 
+def get_absolute_path(file_name):
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, file_name)
+
+
 if __name__ == '__main__':
     input_file_name = input("Enter the name of the file : ")
 
     cwd = os.path.dirname(os.path.abspath(__file__))
-    input_file_path = cwd + "/" + input_file_name
+    input_file_path = get_absolute_path(input_file_name)
     if path.exists(input_file_path):
         failed_file_name = input("Enter the name of the file to which failed user details are to be saved : ")
-        failed_file_path = cwd + "/" + failed_file_name
+        failed_file_path = get_absolute_path(failed_file_name)
 
         message_template = input(
             "Enter the message to be sent ( please enter {} where you need to edit in the customer name provided in "
@@ -217,7 +229,7 @@ if __name__ == '__main__':
         media_file_path = ''
         if len(media_file_name) > 0:
             if path.exists(media_file_name):
-                media_file_path = cwd + "\\" + media_file_name
+                media_file_path = get_absolute_path(media_file_name)
             else:
                 print("Media file not found")
 
