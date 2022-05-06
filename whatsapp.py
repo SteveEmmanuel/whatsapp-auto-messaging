@@ -100,6 +100,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                     print(user_row[0] + ' present, trying to click')
                     try:
                         user_element.click()
+                        success = True
                     except StaleElementReferenceException as se:
                         print('Stale element found, will find the user element again.')
                         user_element = check_presence_of_element_with_css_selector(chrome_browser,
@@ -107,6 +108,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                                                                                        user_row[0]))
                         try:
                             user_element.click()
+                            success = True
                         except StaleElementReferenceException as se:
                             success = False
                     else:
@@ -127,6 +129,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                         if attach_files_button is not None:
                             try:
                                 attach_files_button.click()
+                                success = True
                             except Exception as e:
                                 print('Failed to click attach file button.')
                                 success = False
@@ -143,6 +146,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                             try:
                                 sleep(1)
                                 media_attachment.click()
+                                success = True
                             except Exception as e:
                                 print('Failed to click attach media file button.')
                                 success = False
@@ -167,6 +171,7 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                         if send_attachment_button is not None:
                             try:
                                 send_attachment_button.click()
+                                success = True
                             except Exception as e:
                                 print('Failed to find send attachment button.')
                                 success = False
@@ -174,28 +179,28 @@ def send_message(input_file_path, image_file_path, failed_file_path, message_tem
                             print('Send attachment Button not found.')
                             success = False
 
-                        message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+                    message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+                    message = message_template
+                    if message_box is not None and success is True:
+                        if "{}" in message_template:
+                            message = message_template.format(user_row[0])
+                        message_box.send_keys(message)
 
-                        if message_box is not None and success is True:
-                            if "{}" in message_template:
-                                message = message_template.format(user_row[0])
-                            message_box.send_keys(message)
-
-                            send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
-                            # Click on send button
-                            if send_button is not None:
-                                try:
-                                    send_button.click()
-                                except Exception as e:
-                                    print('Failed to send message.')
-                                    success = False
-                            else:
-                                print('Send Button not found.')
+                        send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
+                        # Click on send button
+                        if send_button is not None:
+                            try:
+                                send_button.click()
+                            except Exception as e:
+                                print('Failed to send message.')
                                 success = False
                         else:
-                            print('Message Box not found.')
+                            print('Send Button not found.')
                             success = False
-                        print('User loop exited\n\n')
+                    else:
+                        print('Message Box not found.')
+                        success = False
+                    print('User loop exited\n\n')
                 else:
                     success = False
                     print(user_row[0] + ' not present in chat history.')
