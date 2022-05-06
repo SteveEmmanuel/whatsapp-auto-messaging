@@ -73,7 +73,8 @@ def register_driver():
     return chrome_browser
 
 
-def send_message(chrome_browser, input_file_path, failed_file_path, message_template, media_file_path):
+def send_message(input_file_path, failed_file_path, message_template, media_file_path):
+    chrome_browser = register_driver()
     chrome_browser.get('https://web.whatsapp.com/')
     with open(input_file_path) as input_csv_file, open(failed_file_path, 'w', newline='') as failed_csv_file:
         csv_reader = csv.reader(input_csv_file, delimiter=',')
@@ -211,9 +212,15 @@ if __name__ == '__main__':
         chrome_browser = register_driver()
     except SessionNotCreatedException as snce:
         print(
-            "Please download the appropriate version of the chrome driver from https://chromedriver.chromium.org/downloads ")
-        print("After downloading, place the file in the appropriate sub folder in the folder [chromedrivers].")
+            'Please download the appropriate version of the chrome driver from '
+            'https://chromedriver.chromium.org/downloads ')
+        print('After downloading, place the file in the appropriate sub folder in the folder [chromedrivers].')
         sys.exit()
+    except Exception as e:
+        print(str(e))
+        sys.exit()
+    else:
+        chrome_browser.close()
     input_file_name = input("Enter the name of the file : ")
 
     cwd = os.path.dirname(os.path.abspath(__file__))
@@ -237,6 +244,7 @@ if __name__ == '__main__':
             else:
                 print("Media file not found")
 
-        send_message(chrome_browser, input_file_path, failed_file_path, message_template, media_file_path)
+        send_message(input_file_path, failed_file_path, message_template, media_file_path)
     else:
         print("File not found")
+    chrome_browser.close()
