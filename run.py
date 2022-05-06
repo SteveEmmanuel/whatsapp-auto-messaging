@@ -152,7 +152,12 @@ def send_message(input_file_path, failed_file_path, message_template, media_file
                     pyautogui.press('enter')
                     sleep(2)
 
-                    send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser, '._3y5oW._3qMYG')
+                    image = check_presence_of_element_with_css_selector(chrome_browser, '._2YWgP')
+
+                    if image is None:
+                        break
+                    send_attachment_button = check_presence_of_element_with_css_selector(chrome_browser,
+                                                                                         '._3y5oW._3qMYG')
 
                     if send_attachment_button is not None:
                         try:
@@ -212,7 +217,7 @@ if __name__ == '__main__':
         media_file_path = ''
         if len(media_file_name) > 0:
             if path.exists(media_file_name):
-                media_file_path = cwd + "/" + media_file_name
+                media_file_path = cwd + "\\" + media_file_name
             else:
                 print("Media file not found")
 
