@@ -247,4 +247,3 @@ if __name__ == '__main__':
         send_message(input_file_path, failed_file_path, message_template, media_file_path)
     else:
         print("File not found")
-    chrome_browser.close()
