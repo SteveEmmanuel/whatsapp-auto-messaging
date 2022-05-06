@@ -12,6 +12,17 @@ def find_contact_from_new_chat(user_name):
     # TODO implement finding contact from new chat
 
 
+def check_presence_of_element_with_css_selector(driver, selector):
+    try:
+        element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+    except NoSuchElementException as se:
+        print("No element found with selector " + selector)
+        return None
+    else:
+        return element
+
+
 if __name__ == '__main__':
 
     options = webdriver.ChromeOptions()
@@ -27,36 +38,21 @@ if __name__ == '__main__':
 
     for user_name in user_name_list:
 
-        try:
-            # Select the user in the chat history with the specified name
-            user = WebDriverWait(chrome_browser, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'span[title="{}"]'.format(user_name)))
-            )
-        except NoSuchElementException as se:
+        user = check_presence_of_element_with_css_selector(chrome_browser, 'span[title="{}"]'.format(user_name))
+        if user is not None:
+            user.click()
+
+            message_box = check_presence_of_element_with_css_selector(chrome_browser, '._2vJ01 ._3FRCZ')
+            if message_box is not None:
+                message_box.send_keys('hey')
+
+                send_button = check_presence_of_element_with_css_selector(chrome_browser, '._1U1xa')
+                # Click on send button
+                if send_button is not None:
+                    send_button.click()
+        else:
             # No user by the specified name in chat history
             # So looking in create new chat
             find_contact_from_new_chat(user_name)
-        else:
-            user.click()
-
-            # Typing message into message box
-            try:
-                message_box = WebDriverWait(chrome_browser, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, '._2vJ01 ._3FRCZ'))
-                )
-            except Exception as e:
-                print(e)
-            else:
-                message_box.send_keys('hey')
-
-                # Click on send button
-                try:
-                    send_button = WebDriverWait(chrome_browser, 10).until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, '._1U1xa'))
-                    )
-                except Exception as e:
-                    print(e)
-                else:
-                    send_button.click()
 
     chrome_browser.close()
