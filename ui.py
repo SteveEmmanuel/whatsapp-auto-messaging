@@ -174,7 +174,7 @@ class App(QDialog):
         if type == 'error':
             dialog.setIcon(QMessageBox.Warning)
         dialog.setText(message)
-        dialog.setWindowTitle(type)
+        dialog.setWindowTitle(type.title())
         dialog.setStandardButtons(QMessageBox.Ok)
 
         dialog.exec_()
